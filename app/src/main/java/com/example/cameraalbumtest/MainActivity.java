@@ -19,8 +19,9 @@ import android.widget.TextView;
 
 import com.example.cameraalbumtest.net.DataRequest;
 import com.example.cameraalbumtest.util.Base64Util;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,6 +29,7 @@ import java.io.IOException;
 public class MainActivity extends AppCompatActivity {
 
     TextView response;//响应
+    TextView name;//返回的姓名
     String responseData;
 
     String image;//base64的 image
@@ -42,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         response = (TextView) findViewById(R.id.response);
+        name = (TextView) findViewById(R.id.name);
         Button takePhoto = (Button) findViewById(R.id.take_photo);
         picture = (ImageView) findViewById(R.id.picture);
 
@@ -70,8 +73,6 @@ public class MainActivity extends AppCompatActivity {
                 startActivityForResult(intent, TAKE_PHOTO);
             }
         });
-
-
     }
 
     @Override
@@ -98,7 +99,8 @@ public class MainActivity extends AppCompatActivity {
                                 response.setText(msg.obj.toString());
                                 responseData = msg.obj.toString();//将json数据赋值给responseData，准备处理Json数据
 //                                parseJSONWithJSONObject(responseData);
-                                Log.d("SSSSSSSSS",responseData);
+                                String getName = parseSearchedFace((JSONObject) msg.obj);//msg.obj就是一个jsonObject对象，存的是json数据
+                                name.setText("This is "+getName);
                                 break;
                             default:
                                 break;
@@ -109,24 +111,37 @@ public class MainActivity extends AppCompatActivity {
                 DataRequest request = new DataRequest(image, myHandler);
                 request.execute();
 //                parseJSONWithJSONObject(responseData);
+
                 break;
             default:
                 break;
         }
     }
 
-    private void parseJSONWithJSONObject(String jsonData) {
+    private static String parseSearchedFace(JSONObject jsonData) {
+        String userId=null;
         try {
-            JsonParser parse =new JsonParser();  //创建json解析器
-//            JSONArray jsonArray = new JSONArray(jsonData);
-            JsonObject jsonObject=(JsonObject) parse.parse(jsonData);  //创建jsonObject对象
-            String result = jsonObject.get("result").getAsString();
-            Log.d("result", "result is " + result);
-            if (result==null){
-                Log.d("result", "result is null" );
+            JSONObject myJsonData = jsonData;  //创建jsonObject对象
+            JSONObject result = myJsonData.getJSONObject("result");
+//            System.out.println(result);
+            Log.d("result", result.toString());
+
+            JSONArray userList = result.getJSONArray("user_list");
+            Log.d("user_list", userList.toString());
+            for (int i = 0; i < userList.length(); ++i) {
+                JSONObject faceItem = userList.getJSONObject(i);
+                double score = faceItem.getInt("score");
+                if (score > 60){
+                    Log.d("Searchedface", score + "this is " + userId);
+                    userId = faceItem.getString("user_id");
+                    return  userId;
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return  userId;
     }
+
+
 }

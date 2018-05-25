@@ -7,7 +7,6 @@ import android.util.Log;
 
 import com.baidu.aip.face.AipFace;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -54,31 +53,10 @@ public class DataRequest extends AsyncTask<String,Void,String> {
 
         // 人脸搜索
          res = client.search(image, imageType, groupIdList, options);
-        parseSearchedFace(res);
         Log.d("searchedface",res.toString());
         return res.toString();
     }
-    private static void parseSearchedFace(JSONObject jsonData) {
-        try {
-            JSONObject myJsonData=jsonData;  //创建jsonObject对象
-            JSONObject result = myJsonData.getJSONObject("result");
-//            System.out.println(result);
-            Log.d("parseSearchedFace",result.toString());
 
-            JSONArray userList=result.getJSONArray("user_list");
-            Log.d("parseSearchedFace",userList.toString());
-            for(int i=0;i<userList.length();++i){
-                JSONObject faceItem=userList.getJSONObject(i);
-                double score=faceItem.getInt("score");
-                String userId=faceItem.getString("user_id");
-                if (score>80)
-//                    System.out.println(score+"this is "+userId);
-                Log.d("Searchedface" ,score+"this is "+userId);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
     @Override
     protected void onPostExecute(String str) {
         super.onPostExecute(str);
